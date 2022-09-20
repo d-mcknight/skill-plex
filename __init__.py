@@ -61,11 +61,13 @@ class PlexSkill(OVOSCommonPlaybackSkill):
         :returns: list of dict search results
         """
         confidence = 75
-        if media_type == MediaType.MUSIC:
-            for r in self.plex_api.search_music(phrase):
-                r['match_confidence'] = confidence
-                confidence -= 5
-                yield r
+        # TODO: search other media types, handle 'Plex' vocab, confidence calculation
+        for r in self.plex_api.search_music(phrase):
+            r['media_type'] = MediaType.MUSIC
+            r['playback'] = PlaybackType.AUDIO
+            r['match_confidence'] = confidence
+            confidence -= 5
+            yield r
 
 
 def create_skill():
