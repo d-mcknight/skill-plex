@@ -35,10 +35,11 @@ Finally, `sudo systemctl restart neon-skills`.
 
 ## Neon containers
 
-Edit `docker/neon/neon.yaml` and add a default skill:
+Edit `docker/config/neon.yaml` and add a default skill:
 
 ```
-default-skills:
+skills:
+  default-skills:
     - https://github.com/d-mcknight/skill-plex
 ```
 
