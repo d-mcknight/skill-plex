@@ -36,8 +36,8 @@ class PlexAPI:
         if not tracks:
             return None
         return [{
-                'image': self._get_plex_res(track.parentThumb),
-                'bg_image': self._get_plex_res(track.grandparentArt),
+                'image': self._get_plex_res(track.parentThumb) if track.parentThumb else None,
+                'bg_image': self._get_plex_res(track.grandparentArt) if track.grandparentArt else None,
                 'uri': track.getStreamURL(),
                 'title': track.title,
                 'album': track.parentTitle,
