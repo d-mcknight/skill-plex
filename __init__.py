@@ -19,6 +19,7 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE,  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+from os.path import join, dirname
 from typing import List
 
 from .plex_api import PlexAPI
@@ -31,7 +32,20 @@ from ovos_utils.log import LOG
 class PlexSkill(OVOSCommonPlaybackSkill):
     def __init__(self):
         super(PlexSkill, self).__init__()
+        self.skill_icon = join(dirname(__file__), "plex.png")
         self._plex_api = None
+        self.supported_media = [
+            MediaType.GENERIC,
+            MediaType.MUSIC,
+            MediaType.AUDIO,
+            MediaType.MOVIE,
+            MediaType.SHORT_FILM,
+            MediaType.SILENT_MOVIE,
+            MediaType.VIDEO,
+            MediaType.DOCUMENTARY,
+            MediaType.CARTOON,
+            # MediaType.TV,
+        ]
 
     @property
     def plex_api(self):
@@ -60,14 +74,63 @@ class PlexSkill(OVOSCommonPlaybackSkill):
         :param media_type: user requested media type
         :returns: list of dict search results
         """
+        # TODO: improved confidence calculation
         confidence = 75
-        # TODO: search other media types, handle 'Plex' vocab, confidence calculation
-        for r in self.plex_api.search_music(phrase):
-            r['media_type'] = MediaType.MUSIC
-            r['playback'] = PlaybackType.AUDIO
-            r['match_confidence'] = confidence
-            confidence -= 5
-            yield r
+        if self.voc_match(phrase, "plex"):
+            confidence += 15
+            phrase = self.remove_voc(phrase, "plex")
+            self.extend_timeout(3)
+
+        # Determine what kind of media to play
+        movie_search = self.voc_match(phrase, "movie")
+        # tv_search = self.voc_match(phrase, "tv")
+        phrase = self.remove_voc(phrase, "movie")
+        # phrase = self.remove_voc(phrase, "tv")
+        self.log.info(f"Media type for search: {media_type}")
+        self.log.info(f"Perform a movie search? {movie_search}")
+        # self.log.info(f"Perform a tv search? {tv_search}")
+        phrase = phrase.replace("on ", "").replace("in ", "")
+
+        # Music search
+        if media_type in (MediaType.MUSIC, MediaType.AUDIO, MediaType.GENERIC) and \
+        ("soundtrack" not in phrase and not movie_search):
+            self.log.info(f"Searching Plex Music for {phrase}")
+            for r in self.plex_api.search_music(phrase):
+                r['media_type'] = MediaType.MUSIC
+                r['playback'] = PlaybackType.AUDIO
+                if media_type != MediaType.GENERIC:
+                    confidence += 10
+                r['match_confidence'] = confidence
+                yield r
+
+        # Movie search
+        if media_type in (
+            MediaType.MOVIE,
+            MediaType.SHORT_FILM,
+            MediaType.SILENT_MOVIE,
+            MediaType.VIDEO,
+            MediaType.DOCUMENTARY,
+            MediaType.CARTOON,
+            MediaType.GENERIC
+        ):
+            self.log.info(f"Searching Plex Movies for {phrase}")
+            for movie in self.plex_api.search_movies(phrase):
+                movie['media_type'] = MediaType.MOVIE
+                movie['playback'] = PlaybackType.VIDEO
+                if media_type != MediaType.GENERIC:
+                    confidence += 10
+                movie['match_confidence'] = confidence
+                yield movie
+
+        # # TV search
+        # for episode in self.plex_api.search_shows(phrase):
+        #     self.log.info(f"Searching Plex TV for {phrase}")
+        #     episode['media_type'] = MediaType.TV
+        #     episode['playback'] = PlaybackType.VIDEO
+        #     if media_type != MediaType.GENERIC:
+        #         confidence += 10
+        #     episode['match_confidence'] = confidence
+        #     yield episode
 
 
 def create_skill():

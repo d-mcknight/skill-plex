@@ -1,12 +1,16 @@
 # skill-plex.d-mcknight
 
-An MVP for playing music from [Plex](https://plex.tv) on your Neon or OpenVoice OS device via [OCP](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin).
+An MVP for playing music from [Plex](https://plex.tv) on your Neon or OpenVoice OS device via [OVOS Common Play (OCP)](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin).
 
 ## Usage
 
 Since this is an OCP skill, your music voice requests will automatically search your Plex music library. You can also search from the GUI on the OCP dashboard.
 
 Please note that precedence matters in OCP - by default, this skill will not be highest precedence. If you want to search your Plex library before other OCP skills you'll need to configure it to have higher precedence. See the OCP documentation for more details.
+
+Also, due to the way OCP handles intent matching, the Plex skill will return more confident results if you ask for a media type explicitly. For example you might say "play the movie Ghostbusters" to make sure you get back a movie result instead of a soundtrack or TV show. This skill also significantly boosts its confidence score if you include the word Plex in your request: "play music by Charles Mingus on Plex."
+
+_Note: The assumption with users of the Plex skill is that they would want to default Plex, so the base confidence score is 75/100. Asking for Plex specifically boosts that base score to 90._
 
 ## Installation
 
@@ -37,7 +41,7 @@ Finally, `sudo systemctl restart neon-skills`.
 
 Edit `docker/config/neon.yaml` and add a default skill:
 
-```
+```yaml
 skills:
   default-skills:
     - https://github.com/d-mcknight/skill-plex
