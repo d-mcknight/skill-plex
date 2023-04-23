@@ -79,7 +79,6 @@ class PlexSkill(OVOSCommonPlaybackSkill):
         if self.voc_match(phrase, "plex"):
             confidence += 15
             phrase = self.remove_voc(phrase, "plex")
-            self.extend_timeout(3)
 
         # Determine what kind of media to play
         movie_search = self.voc_match(phrase, "movie")
@@ -94,6 +93,7 @@ class PlexSkill(OVOSCommonPlaybackSkill):
         # Music search
         if media_type in (MediaType.MUSIC, MediaType.AUDIO, MediaType.GENERIC) and \
         ("soundtrack" not in phrase and not movie_search):
+            self.extend_timeout(3)
             self.log.info(f"Searching Plex Music for {phrase}")
             for r in self.plex_api.search_music(phrase):
                 r['media_type'] = MediaType.MUSIC
@@ -113,6 +113,7 @@ class PlexSkill(OVOSCommonPlaybackSkill):
             MediaType.CARTOON,
             MediaType.GENERIC
         ):
+            self.extend_timeout(3)
             self.log.info(f"Searching Plex Movies for {phrase}")
             for movie in self.plex_api.search_movies(phrase):
                 movie['media_type'] = MediaType.MOVIE
