@@ -10,7 +10,7 @@ Please note that precedence matters in OCP - by default, this skill will not be 
 
 Also, due to the way OCP handles intent matching, the Plex skill will return more confident results if you ask for a media type explicitly. For example you might say "play the movie Ghostbusters" to make sure you get back a movie result instead of a soundtrack or TV show. This skill also significantly boosts its confidence score if you include the word Plex in your request: "play music by Charles Mingus on Plex."
 
-_Note: The assumption with users of the Plex skill is that they would want to default Plex, so the base confidence score is 75/100. Asking for Plex specifically boosts that base score to 90._
+_Note: The assumption with users of the Plex skill is that they would want to get Plex results by default, so the base confidence score is 75/100. Asking for Plex specifically boosts that base score to 90. While this will increase the chances of Plex results coming in first, other skills may also have high confidence scores, so results are not guaranteed._
 
 ## Installation
 
@@ -31,7 +31,7 @@ cat <<EOF > ~/.config/neon/skills/skill-plex.d-mcknight/settings.json
 EOF
 ```
 
-Visit https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/ for instructions on finding your Plex token.
+Visit [https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/) for instructions on finding your Plex token.
 It should look something like `ys738s6uPWXpwabc4sRYe`.
 Enter your token in `~/.config/neon/skills/skill-plex.d-mcknight/settings.json` where it says `REPLACE`.
 
