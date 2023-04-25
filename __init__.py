@@ -33,7 +33,7 @@ class PlexSkill(OVOSCommonPlaybackSkill):
     """Plex OCP Skill"""
     def __init__(self):
         super(PlexSkill, self).__init__()
-        self.skill_icon = join(dirname(__file__), "plex.png")
+        self.skill_icon = join(dirname(__file__), "ui", "plex.png")
         self._plex_api = None
         self.supported_media = [
             MediaType.GENERIC,

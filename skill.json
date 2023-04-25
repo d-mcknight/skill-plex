@@ -5,8 +5,12 @@
     "short_description": "[OCP](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin) skill to play media from [Plex](https://plex.tv).",
     "description": "",
     "examples": [
-        "Play Charles Mingus.",
-        "Play music."
+        "Play Charles Mingus",
+        "Play Jamie Cullum on Plex",
+        "Play the movie Ghostbusters",
+        "Play the movie Ghostbusters on Plex",
+        "Play Star Trek the Next Generation on Plex",
+        "Play the tv show Star Trek the Next Generation on Plex"
     ],
     "desktopFile": false,
     "warning": "",
@@ -29,7 +33,7 @@
     ],
     "branch": "master",
     "license": "BSD-3-Clause",
-    "icon": "https://freemusicarchive.org/legacy/fma-smaller.jpg",
+    "icon": "https://www.plex.tv/wp-content/themes/plex/assets/img/plex-logo.svg",
     "category": "Music",
     "categories": [
         "Music",
