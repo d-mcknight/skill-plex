@@ -1,4 +1,3 @@
-"""Plex API class for constructing OCP-shaped search results"""
 from typing import List
 
 from plexapi.audio import Artist, Album, Track
@@ -9,16 +8,21 @@ from plexapi.library import MovieSection, ShowSection, MusicSection
 
 
 class PlexAPI:
-    """Thinly wrapped plexapi library for OCP results"""
+    """Thinly wrapped plexapi library for OVOS Common Play results"""
     def __init__(self, token: str):
-        account = MyPlexAccount(token=token)
-        servers = [r for r in account.resources() if "server" in r.provides]
-        self.servers: List[PlexServer] = [account.resource(server.name).connect() for server in servers]
+        self.servers: List[PlexServer] = []
         self.movies, self.shows, self.music = [], [], []
+        self.connect_to_servers(token)
         self.init_libraries()
 
+    def connect_to_servers(self, token: str):
+        """Provide connections to all servers accessible from the provided token."""
+        account = MyPlexAccount(token=token)
+        servers = [r for r in account.resources() if "server" in r.provides]
+        self.servers = [account.resource(server.name).connect() for server in servers]
+
     def init_libraries(self):
-        """Load music, TV, and movie libraries from Plex servers"""
+        """Initialize server libraries, specifically Movies, Shows, and Music."""
         for server in self.servers:
             lib = server.library.sections()
             for section in lib:
@@ -30,80 +34,83 @@ class PlexAPI:
                     self.music.append(section)
 
     def search_music(self, query: str):
-        """Search known music libraries for a specific query"""
+        """Search music libraries"""
         track_list = []
         for i, music in enumerate(self.music):
-            results = music.hubSearch(query)  # Artist, Album, Track
-            if not results:
-                continue
-            tracks = None
-            best = results[0]
-            if isinstance(best, Artist) or isinstance(best, Album):
-                tracks = best.tracks()
-            elif isinstance(best, Track):
-                tracks = [best]
-            if not tracks:
-                continue
-            track_list += [{
-                    'image': self._get_plex_res(track.parentThumb, i) if track.parentThumb else None,
-                    'bg_image': self._get_plex_res(track.grandparentArt, i) if track.grandparentArt else None,
-                    'uri': track.getStreamURL(),
-                    'title': track.title,
-                    'album': track.parentTitle,
-                    'artist': track.grandparentTitle,
-                    'length': track.duration
-                    } for track in tracks]
+            results = music.hubSearch(query)
+            for result in results:
+                tracks = self._get_tracks_from_result(result)
+                track_list += [self._construct_track_dict(track, i) for track in tracks]
         return track_list
 
+    def _get_tracks_from_result(self, result):
+        """Get music Tracks from search results"""
+        if isinstance(result, Artist) or isinstance(result, Album):
+            return result.tracks()
+        elif isinstance(result, Track):
+            return [result]
+        return []
+
+    def _construct_track_dict(self, track, i):
+        """Construct a dictionary of Tracks for use with OVOS Common Play"""
+        return {
+            'image': track.thumbUrl if track.thumbUrl else None,
+            'bg_image': track.artUrl if track.artUrl else None,
+            'uri': track.getStreamURL(),
+            'title': track.title,
+            'album': track.parentTitle,
+            'artist': track.grandparentTitle,
+            'length': track.duration
+        }
+
     def search_movies(self, query: str):
-        """Search known movie libraries for a specific query"""
+        """Search movie libraries"""
         movie_list = []
         for movies in self.movies:
             results = movies.hubSearch(query)
-            if not results:
-                continue
-            movie_results = []
-            best = results[0]
-            if isinstance(best, Movie):
-                movie_results.append(best)
-            if not movie_results:
-                continue
-            movie_list += [{
-                    'image': mov.thumbUrl if mov.thumbUrl else None,
-                    'bg_image': mov.posterUrl if mov.posterUrl else None,
-                    'uri': mov.getStreamURL(),
-                    'title': mov.title,
-                    'album': mov.title,
-                    'artist': ", ".join([director.tag for director in mov.directors]) if mov.directors else None,
-                    'length': mov.duration,
-                    } for mov in movie_results]
+            for result in results:
+                if isinstance(result, Movie):
+                    movie_list.append(self._construct_movie_dict(result))
         return movie_list
 
+    def _construct_movie_dict(self, mov):
+        """Construct a dictionary of Movies for use with OVOS Common Play"""
+        return {
+            'image': mov.thumbUrl if mov.thumbUrl else None,
+            'bg_image': mov.posterUrl if mov.posterUrl else None,
+            'uri': mov.getStreamURL(),
+            'title': mov.title,
+            'album': mov.title,
+            'artist': ", ".join([director.tag for director in mov.directors]) if mov.directors else None,
+            'length': mov.duration,
+        }
+
     def search_shows(self, query: str):
-        """Search known TV libraries for a specific query"""
+        """Search TV Show libraries"""
         show_list = []
         for shows in self.shows:
             results = shows.hubSearch(query)
-            if not results:
-                continue
-            show_results = []
-            best = results[0]
-            if isinstance(best, Show):
-                show_results += best.episodes()
-            elif isinstance(best, Episode):
-                show_results += [best]
-            if not show_results:
-                continue
-            show_list += [{
-                    'image': show.thumbUrl if show.thumbUrl else None,
-                    'bg_image': show.posterUrl if show.posterUrl else None,
-                    'uri': show.getStreamURL(),
-                    'title': f"{show.seasonEpisode if show.seasonEpisode else ''} - {show.title}",
-                    'album': f"{show.grandparentTitle if show.grandparentTitle else ''} - {show.parentTitle}",
-                    'artist': ", ".join([director.tag for director in show.directors]) if show.directors else None,
-                    'length': show.duration,
-                    } for show in show_results]
+            for result in results:
+                episodes = self._get_episodes_from_result(result)
+                show_list += [self._construct_show_dict(show) for show in episodes]
         return show_list
 
-    def _get_plex_res(self, resource: str, i: int) -> str:
-        return self.servers[i].url(resource, True)
+    def _get_episodes_from_result(self, result):
+        """Get TV Episodes from search results"""
+        if isinstance(result, Show):
+            return result.episodes()
+        elif isinstance(result, Episode):
+            return [result]
+        return []
+
+    def _construct_show_dict(self, show):
+        """Construct a dictionary of Shows for use with OVOS Common Play"""
+        return {
+            'image': show.thumbUrl if show.thumbUrl else None,
+            'bg_image': show.posterUrl if show.posterUrl else None,
+            'uri': show.getStreamURL(),
+            'title': f"{show.seasonEpisode if show.seasonEpisode else ''} - {show.title}",
+            'album': f"{show.grandparentTitle if show.grandparentTitle else ''} - {show.parentTitle}",
+            'artist': ", ".join([director.tag for director in show.directors]) if show.directors else None,
+            'length': show.duration,
+        }
