@@ -23,14 +23,14 @@ from os.path import dirname, join
 from typing import List
 
 from ovos_plugin_common_play import MediaType, PlaybackType
-from ovos_workshop.skills.common_play import (OVOSCommonPlaybackSkill,
-                                              ocp_search)
+from ovos_workshop.skills.common_play import OVOSCommonPlaybackSkill, ocp_search
 
 from .plex_api import PlexAPI
 
 
 class PlexSkill(OVOSCommonPlaybackSkill):
     """Plex OCP Skill"""
+
     def __init__(self):
         super(PlexSkill, self).__init__()
         self.skill_icon = join(dirname(__file__), "ui", "plex.png")
@@ -55,9 +55,9 @@ class PlexSkill(OVOSCommonPlaybackSkill):
         :returns: PlexAPI class
         """
         if not self._plex_api:
-            if not self.settings.get('token'):
+            if not self.settings.get("token"):
                 self._init_plex_api_key()
-            api_key = self.settings.get('token')
+            api_key = self.settings.get("token")
             self._plex_api = PlexAPI(api_key)
         return self._plex_api
 
@@ -65,12 +65,13 @@ class PlexSkill(OVOSCommonPlaybackSkill):
         """Login to Plex API with an account pin, if token is missing."""
         # pylint: disable=import-outside-toplevel
         from plexapi.myplex import MyPlexPinLogin
+
         account = MyPlexPinLogin()
         account.run()
         self.gui.show_text(account.pin)
         account.waitForLogin()
         token = account.token
-        self.settings['token'] = token
+        self.settings["token"] = token
         self.settings.store()
 
     @ocp_search()
@@ -95,19 +96,21 @@ class PlexSkill(OVOSCommonPlaybackSkill):
         self.log.info("Media type for search: %s", media_type)
         self.log.info("Perform a movie search? %s", movie_search)
         self.log.info("Perform a tv search? %s", tv_search)
-        phrase = phrase.replace("on ", "").replace("in ", "").strip()
+        phrase = phrase.replace(" on ", "").replace("in ", "").strip()
 
         # Music search
-        if media_type in (MediaType.MUSIC, MediaType.AUDIO, MediaType.GENERIC) \
-                and ("soundtrack" not in phrase and not movie_search):
+        if media_type in (MediaType.MUSIC, MediaType.AUDIO, MediaType.GENERIC) and (
+            "soundtrack" not in phrase and not movie_search
+        ):
             self.extend_timeout(3)
             self.log.info("Searching Plex Music for %s", phrase)
             for res in self.plex_api.search_music(phrase):
-                res['media_type'] = media_type
-                res['playback'] = PlaybackType.AUDIO
+                self.log.debug(res)
+                res["media_type"] = media_type
+                res["playback"] = PlaybackType.AUDIO
                 if media_type != MediaType.GENERIC:
                     confidence += 10
-                res['match_confidence'] = confidence
+                res["match_confidence"] = confidence
                 yield res
 
         # Movie search
@@ -117,16 +120,16 @@ class PlexSkill(OVOSCommonPlaybackSkill):
             MediaType.SILENT_MOVIE,
             MediaType.VIDEO,
             MediaType.DOCUMENTARY,
-            MediaType.GENERIC
+            MediaType.GENERIC,
         ):
             self.extend_timeout(3)
             self.log.info("Searching Plex Movies for %s", phrase)
             for movie in self.plex_api.search_movies(phrase):
-                movie['media_type'] = media_type
-                movie['playback'] = PlaybackType.VIDEO
+                movie["media_type"] = media_type
+                movie["playback"] = PlaybackType.VIDEO
                 if media_type != MediaType.GENERIC:
                     confidence += 10
-                movie['match_confidence'] = confidence
+                movie["match_confidence"] = confidence
                 yield movie
 
         # TV search
@@ -134,11 +137,11 @@ class PlexSkill(OVOSCommonPlaybackSkill):
             self.extend_timeout(3)
             self.log.info("Searching Plex TV for %s", phrase)
             for episode in self.plex_api.search_shows(phrase):
-                episode['media_type'] = media_type
-                episode['playback'] = PlaybackType.VIDEO
+                episode["media_type"] = media_type
+                episode["playback"] = PlaybackType.VIDEO
                 if media_type != MediaType.GENERIC:
                     confidence += 10
-                episode['match_confidence'] = confidence
+                episode["match_confidence"] = confidence
                 yield episode
 
 

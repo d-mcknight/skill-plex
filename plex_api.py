@@ -9,6 +9,7 @@ from plexapi.library import MovieSection, ShowSection, MusicSection
 
 class PlexAPI:
     """Thinly wrapped plexapi library for OVOS Common Play results"""
+
     def __init__(self, token: str):
         self.servers: List[PlexServer] = []
         self.movies, self.shows, self.music = [], [], []
@@ -54,13 +55,13 @@ class PlexAPI:
     def _construct_track_dict(self, track, i):
         """Construct a dictionary of Tracks for use with OVOS Common Play"""
         return {
-            'image': track.thumbUrl if track.thumbUrl else None,
-            'bg_image': track.artUrl if track.artUrl else None,
-            'uri': track.getStreamURL(),
-            'title': track.title,
-            'album': track.parentTitle,
-            'artist': track.grandparentTitle,
-            'length': track.duration
+            "image": track.thumbUrl if track.thumbUrl else "",
+            "bg_image": track.artUrl if track.artUrl else "",
+            "uri": track.getStreamURL(),
+            "title": track.title,
+            "album": track.parentTitle,
+            "artist": track.grandparentTitle,
+            "length": track.duration,
         }
 
     def search_movies(self, query: str):
@@ -76,13 +77,13 @@ class PlexAPI:
     def _construct_movie_dict(self, mov):
         """Construct a dictionary of Movies for use with OVOS Common Play"""
         return {
-            'image': mov.thumbUrl if mov.thumbUrl else None,
-            'bg_image': mov.posterUrl if mov.posterUrl else None,
-            'uri': mov.getStreamURL(),
-            'title': mov.title,
-            'album': mov.title,
-            'artist': ", ".join([director.tag for director in mov.directors]) if mov.directors else None,
-            'length': mov.duration,
+            "image": mov.thumbUrl if mov.thumbUrl else "",
+            "bg_image": mov.posterUrl if mov.posterUrl else "",
+            "uri": mov.getStreamURL(),
+            "title": mov.title,
+            "album": mov.title,
+            "artist": ", ".join([director.tag for director in mov.directors]) if mov.directors else "",
+            "length": mov.duration,
         }
 
     def search_shows(self, query: str):
@@ -106,11 +107,11 @@ class PlexAPI:
     def _construct_show_dict(self, show):
         """Construct a dictionary of Shows for use with OVOS Common Play"""
         return {
-            'image': show.thumbUrl if show.thumbUrl else None,
-            'bg_image': show.posterUrl if show.posterUrl else None,
-            'uri': show.getStreamURL(),
-            'title': f"{show.seasonEpisode if show.seasonEpisode else ''} - {show.title}",
-            'album': f"{show.grandparentTitle if show.grandparentTitle else ''} - {show.parentTitle}",
-            'artist': ", ".join([director.tag for director in show.directors]) if show.directors else None,
-            'length': show.duration,
+            "image": show.thumbUrl if show.thumbUrl else "",
+            "bg_image": show.posterUrl if show.posterUrl else "",
+            "uri": show.getStreamURL(),
+            "title": f"{show.seasonEpisode if show.seasonEpisode else ''} - {show.title}",
+            "album": f"{show.grandparentTitle if show.grandparentTitle else ''} - {show.parentTitle}",
+            "artist": ", ".join([director.tag for director in show.directors]) if show.directors else "",
+            "length": show.duration,
         }
