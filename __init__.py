@@ -73,7 +73,7 @@ class PlexSkill(OVOSCommonPlaybackSkill):
 
         account = MyPlexPinLogin()
         account.run()
-        plex_login_w_pin = f"Visit {account.oauthUrl()} with PIN: {account.pin}"
+        plex_login_w_pin = f"Visit https://plex.tv/link with PIN: {account.pin}"
         self.gui.show_text(plex_login_w_pin)
         self.log.info(plex_login_w_pin)
         self.bus.emit(Message("enclosure.mouth.text", {"text": plex_login_w_pin}))
