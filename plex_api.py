@@ -13,7 +13,9 @@ class PlexAPI:
 
     def __init__(self, token: str):
         self.servers: List[PlexServer] = []
-        self.movies, self.shows, self.music: Optional[List[MusicSection]] = [], [], []
+        self.movies: Optional[List[MovieSection]] = []
+        self.shows: Optional[List[ShowSection]] = []
+        self.music: Optional[List[MusicSection]] = []
         self.connect_to_servers(token)
         self.init_libraries()
 
