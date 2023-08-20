@@ -5,6 +5,7 @@ from plexapi.video import Episode, Movie, Show
 from plexapi.myplex import MyPlexAccount
 from plexapi.server import PlexServer
 from plexapi.library import MovieSection, ShowSection, MusicSection
+from ovos_utils.log import LOG
 
 
 class PlexAPI:
@@ -20,6 +21,7 @@ class PlexAPI:
         """Provide connections to all servers accessible from the provided token."""
         account = MyPlexAccount(token=token)
         servers = [r for r in account.resources() if "server" in r.provides]
+        LOG.info("Found %s servers:\n%s", len(servers), "\n".join([s.name for s in servers]))
         self.servers = [account.resource(server.name).connect() for server in servers]
 
     def init_libraries(self):

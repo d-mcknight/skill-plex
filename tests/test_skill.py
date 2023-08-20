@@ -16,6 +16,7 @@ class TestSkill(unittest.TestCase):
     def setUpClass(cls) -> None:
         bus.run_in_thread()
         skill_loader = SkillLoader(bus=bus, skill_directory=dirname(dirname(__file__)), skill_id="PlexSkill")
+        # TODO: Mock the PlexAPI class to prevent network calls
         skill_loader.load()
         cls.skill = skill_loader.instance
 

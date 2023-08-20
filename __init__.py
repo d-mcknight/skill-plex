@@ -62,7 +62,7 @@ class PlexSkill(OVOSCommonPlaybackSkill):
                 self.log.info("No Plex token found, initializing PlexAPI login")
                 self._init_plex_api_key()
             api_key = self.settings.get("token")
-            self.log.info("Plex token found: %s, getting available servers", api_key)
+            self.log.info("Plex token found, getting available servers")
             self._plex_api = PlexAPI(api_key)
         return self._plex_api
 
