@@ -73,14 +73,17 @@ class PlexSkill(OVOSCommonPlaybackSkill):
 
         account = MyPlexPinLogin()
         account.run()
-        plex_login_w_pin = f"Visit https://plex.tv/link with PIN: {account.pin}"
+        plex_login_w_pin = f"Visit {account.oauthUrl} with PIN: {account.pin}"
         self.gui.show_text(plex_login_w_pin)
         self.log.info(plex_login_w_pin)
         self.bus.emit(Message("enclosure.mouth.text", {"text": plex_login_w_pin}))
-        account.waitForLogin()
-        token = account.token
-        self.settings["token"] = token
-        self.settings.store()
+        success = account.waitForLogin()
+        if success:
+            token = account.token
+            self.settings["token"] = token
+            self.settings.store()
+        if not success:
+            self.log.error("Plex login failed, please set token manually in settings.json")
 
     @ocp_search()
     def search_plex(self, phrase, media_type=MediaType.GENERIC) -> List[dict]:
