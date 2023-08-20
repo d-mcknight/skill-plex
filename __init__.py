@@ -23,6 +23,7 @@ from os.path import dirname, join
 from typing import List
 
 from ovos_plugin_common_play import MediaType, PlaybackType
+from ovos_utils.messagebus import Message
 from ovos_workshop.skills.common_play import OVOSCommonPlaybackSkill, ocp_search
 
 from .plex_api import PlexAPI
@@ -31,10 +32,10 @@ from .plex_api import PlexAPI
 class PlexSkill(OVOSCommonPlaybackSkill):
     """Plex OCP Skill"""
 
-    def __init__(self):
-        super(PlexSkill, self).__init__()
+    def __init__(self, *args, **kwargs):
+        super(PlexSkill, self).__init__(*args, **kwargs)
         self.skill_icon = join(dirname(__file__), "ui", "plex.png")
-        self._plex_api = None
+        self._plex_api = self.plex_api
         self.supported_media = [
             MediaType.GENERIC,
             MediaType.MUSIC,
@@ -55,9 +56,12 @@ class PlexSkill(OVOSCommonPlaybackSkill):
         :returns: PlexAPI class
         """
         if not self._plex_api:
+            self.log.info("Initializing PlexAPI")
             if not self.settings.get("token"):
+                self.log.info("No Plex token found, initializing PlexAPI login")
                 self._init_plex_api_key()
             api_key = self.settings.get("token")
+            self.log.info("Plex token found: %s, getting available servers", api_key)
             self._plex_api = PlexAPI(api_key)
         return self._plex_api
 
@@ -68,7 +72,10 @@ class PlexSkill(OVOSCommonPlaybackSkill):
 
         account = MyPlexPinLogin()
         account.run()
-        self.gui.show_text(account.pin)
+        plex_login_w_pin = f"Visit https://plex.tv/link with PIN: {account.pin}"
+        self.gui.show_text(plex_login_w_pin)
+        self.log.info(plex_login_w_pin)
+        self.bus.emit(Message("enclosure.mouth.text", {"text": plex_login_w_pin}))
         account.waitForLogin()
         token = account.token
         self.settings["token"] = token
@@ -102,49 +109,56 @@ class PlexSkill(OVOSCommonPlaybackSkill):
         if media_type in (MediaType.MUSIC, MediaType.AUDIO, MediaType.GENERIC) and (
             "soundtrack" not in phrase and not movie_search
         ):
-            self.extend_timeout(3)
+            # self.extend_timeout(3)
             self.log.info("Searching Plex Music for %s", phrase)
-            for res in self.plex_api.search_music(phrase):
+            pl = self.plex_api.search_music(phrase)
+            for res in pl:
                 self.log.debug(res)
                 res["media_type"] = media_type
                 res["playback"] = PlaybackType.AUDIO
                 if media_type != MediaType.GENERIC:
                     confidence += 10
                 res["match_confidence"] = confidence
-                yield res
+                res["skill_id"] = self.skill_id
+                # yield res
+            yield {
+                "match_confidence": max(0, sorted([res["match_confidence"] for res in pl], reverse=True)[0]),
+                "media_type": MediaType.MUSIC,
+                "playlist": pl,
+                "playback": PlaybackType.AUDIO,
+                "skill_icon": self.skill_icon,
+                "image": pl[0].get("image", ""),
+                "bg_image": pl[0].get("bg_image", ""),
+                "title": pl[0].get("grandparent_title"),
+            }
 
-        # Movie search
-        if media_type in (
-            MediaType.MOVIE,
-            MediaType.SHORT_FILM,
-            MediaType.SILENT_MOVIE,
-            MediaType.VIDEO,
-            MediaType.DOCUMENTARY,
-            MediaType.GENERIC,
-        ):
-            self.extend_timeout(3)
-            self.log.info("Searching Plex Movies for %s", phrase)
-            for movie in self.plex_api.search_movies(phrase):
-                movie["media_type"] = media_type
-                movie["playback"] = PlaybackType.VIDEO
-                if media_type != MediaType.GENERIC:
-                    confidence += 10
-                movie["match_confidence"] = confidence
-                yield movie
+        # # Movie search
+        # if media_type in (
+        #     MediaType.MOVIE,
+        #     MediaType.SHORT_FILM,
+        #     MediaType.SILENT_MOVIE,
+        #     MediaType.VIDEO,
+        #     MediaType.DOCUMENTARY,
+        #     MediaType.GENERIC,
+        # ):
+        #     # self.extend_timeout(3)
+        #     self.log.info("Searching Plex Movies for %s", phrase)
+        #     for movie in self.plex_api.search_movies(phrase):
+        #         movie["media_type"] = media_type
+        #         movie["playback"] = PlaybackType.VIDEO
+        #         if media_type != MediaType.GENERIC:
+        #             confidence += 10
+        #         movie["match_confidence"] = confidence
+        #         yield movie
 
-        # TV search
-        if media_type in (MediaType.TV, MediaType.CARTOON, MediaType.GENERIC):
-            self.extend_timeout(3)
-            self.log.info("Searching Plex TV for %s", phrase)
-            for episode in self.plex_api.search_shows(phrase):
-                episode["media_type"] = media_type
-                episode["playback"] = PlaybackType.VIDEO
-                if media_type != MediaType.GENERIC:
-                    confidence += 10
-                episode["match_confidence"] = confidence
-                yield episode
-
-
-def create_skill():
-    """Allow Mycroft/OVOS/Neon to load this skill class"""
-    return PlexSkill()
+        # # TV search
+        # if media_type in (MediaType.TV, MediaType.CARTOON, MediaType.GENERIC):
+        #     # self.extend_timeout(3)
+        #     self.log.info("Searching Plex TV for %s", phrase)
+        #     for episode in self.plex_api.search_shows(phrase):
+        #         episode["media_type"] = media_type
+        #         episode["playback"] = PlaybackType.VIDEO
+        #         if media_type != MediaType.GENERIC:
+        #             confidence += 10
+        #         episode["match_confidence"] = confidence
+        #         yield episode
