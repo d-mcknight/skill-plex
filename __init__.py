@@ -125,15 +125,16 @@ class PlexSkill(OVOSCommonPlaybackSkill):
                 res["match_confidence"] = confidence
                 res["skill_id"] = self.skill_id
                 # yield res
+            max_confidence = sorted([res["match_confidence"] for res in pl], reverse=True)
             yield {
-                "match_confidence": max(0, sorted([res["match_confidence"] for res in pl], reverse=True)[0]),
+                "match_confidence": max(0, max_confidence[0] if max_confidence else 0),
                 "media_type": MediaType.MUSIC,
                 "playlist": pl,
                 "playback": PlaybackType.AUDIO,
                 "skill_icon": self.skill_icon,
                 "image": pl[0].get("image", ""),
                 "bg_image": pl[0].get("bg_image", ""),
-                "title": pl[0].get("grandparent_title"),
+                "title": pl[0].get("title"),
             }
 
         # # Movie search
