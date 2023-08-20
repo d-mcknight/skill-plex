@@ -35,7 +35,7 @@ class PlexSkill(OVOSCommonPlaybackSkill):
     def __init__(self, *args, **kwargs):
         super(PlexSkill, self).__init__(*args, **kwargs)
         self.skill_icon = join(dirname(__file__), "ui", "plex.png")
-        self._plex_api = self.plex_api
+        self._plex_api = None
         self.supported_media = [
             MediaType.GENERIC,
             MediaType.MUSIC,
@@ -48,6 +48,7 @@ class PlexSkill(OVOSCommonPlaybackSkill):
             MediaType.CARTOON,
             MediaType.TV,
         ]
+        self._plex_api = self.plex_api
 
     @property
     def plex_api(self) -> PlexAPI:
