@@ -21,7 +21,7 @@ class PlexAPI:
         """Provide connections to all servers accessible from the provided token."""
         account = MyPlexAccount(token=token)
         servers = [r for r in account.resources() if "server" in r.provides]
-        LOG.info("Found %s servers:\n%s", len(servers), "\n".join([s.name for s in servers]))
+        LOG.info("Found %s servers: %s", len(servers), ",".join([s.name for s in servers]))
         self.servers = [account.resource(server.name).connect() for server in servers]
 
     def init_libraries(self):
