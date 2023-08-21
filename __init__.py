@@ -117,7 +117,6 @@ class PlexSkill(OVOSCommonPlaybackSkill):
             self.log.info("Searching Plex Music for %s", phrase)
             pl = self.plex_api.search_music(phrase)
             for res in pl:
-                self.log.debug(res)
                 res["media_type"] = media_type
                 res["playback"] = PlaybackType.AUDIO
                 if media_type != MediaType.GENERIC:
