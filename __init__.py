@@ -113,7 +113,6 @@ class PlexSkill(OVOSCommonPlaybackSkill):
         if media_type in (MediaType.MUSIC, MediaType.AUDIO, MediaType.GENERIC) and (
             "soundtrack" not in phrase and not movie_search
         ):
-            # self.extend_timeout(3)
             self.log.info("Searching Plex Music for %s", phrase)
             pl = self.plex_api.search_music(phrase)
             for res in pl:
@@ -123,46 +122,67 @@ class PlexSkill(OVOSCommonPlaybackSkill):
                     confidence += 10
                 res["match_confidence"] = confidence
                 res["skill_id"] = self.skill_id
-                # yield res
             max_confidence = sorted([res["match_confidence"] for res in pl], reverse=True)
             yield {
-                "match_confidence": max(0, max_confidence[0] if max_confidence else 0),
                 "media_type": MediaType.MUSIC,
-                "playlist": pl,
                 "playback": PlaybackType.AUDIO,
-                "skill_icon": self.skill_icon,
                 "image": pl[0].get("image", "") if pl else "",
+                "skill_icon": self.skill_icon,
                 "bg_image": pl[0].get("bg_image", "") if pl else "",
                 "title": pl[0].get("title") if pl else "",
+                "playlist": pl,
+                "match_confidence": max(0, max_confidence[0] if max_confidence else 0),
             }
 
-        # # Movie search
-        # if media_type in (
-        #     MediaType.MOVIE,
-        #     MediaType.SHORT_FILM,
-        #     MediaType.SILENT_MOVIE,
-        #     MediaType.VIDEO,
-        #     MediaType.DOCUMENTARY,
-        #     MediaType.GENERIC,
-        # ):
-        #     # self.extend_timeout(3)
-        #     self.log.info("Searching Plex Movies for %s", phrase)
-        #     for movie in self.plex_api.search_movies(phrase):
-        #         movie["media_type"] = media_type
-        #         movie["playback"] = PlaybackType.VIDEO
-        #         if media_type != MediaType.GENERIC:
-        #             confidence += 10
-        #         movie["match_confidence"] = confidence
-        #         yield movie
+        # Movie search
+        if media_type in (
+            MediaType.MOVIE,
+            MediaType.SHORT_FILM,
+            MediaType.SILENT_MOVIE,
+            MediaType.VIDEO,
+            MediaType.DOCUMENTARY,
+            MediaType.GENERIC,
+        ):
+            self.log.info("Searching Plex Movies for %s", phrase)
+            pl = self.plex_api.search_movies(phrase)
+            for res in pl:
+                res["media_type"] = media_type
+                res["playback"] = PlaybackType.AUDIO
+                if media_type != MediaType.GENERIC:
+                    confidence += 10
+                res["match_confidence"] = confidence
+                res["skill_id"] = self.skill_id
+            max_confidence = sorted([res["match_confidence"] for res in pl], reverse=True)
+            yield {
+                "media_type": media_type,
+                "playback": PlaybackType.VIDEO,
+                "image": pl[0].get("image", "") if pl else "",
+                "skill_icon": self.skill_icon,
+                "bg_image": pl[0].get("bg_image", "") if pl else "",
+                "title": pl[0].get("title") if pl else "",
+                "playlist": pl,
+                "match_confidence": max(0, max_confidence[0] if max_confidence else 0),
+            }
 
-        # # TV search
-        # if media_type in (MediaType.TV, MediaType.CARTOON, MediaType.GENERIC):
-        #     # self.extend_timeout(3)
-        #     self.log.info("Searching Plex TV for %s", phrase)
-        #     for episode in self.plex_api.search_shows(phrase):
-        #         episode["media_type"] = media_type
-        #         episode["playback"] = PlaybackType.VIDEO
-        #         if media_type != MediaType.GENERIC:
-        #             confidence += 10
-        #         episode["match_confidence"] = confidence
-        #         yield episode
+        # TV search
+        if media_type in (MediaType.TV, MediaType.CARTOON, MediaType.GENERIC):
+            self.log.info("Searching Plex TV for %s", phrase)
+            pl = self.plex_api.search_shows(phrase)
+            for res in pl:
+                res["media_type"] = media_type
+                res["playback"] = PlaybackType.VIDEO
+                if media_type != MediaType.GENERIC:
+                    confidence += 10
+                res["match_confidence"] = confidence
+                res["skill_id"] = self.skill_id
+            max_confidence = sorted([res["match_confidence"] for res in pl], reverse=True)
+            yield {
+                "media_type": media_type,
+                "playback": PlaybackType.VIDEO,
+                "image": pl[0].get("image", "") if pl else "",
+                "skill_icon": self.skill_icon,
+                "bg_image": pl[0].get("bg_image", "") if pl else "",
+                "title": pl[0].get("title") if pl else "",
+                "playlist": pl,
+                "match_confidence": max(0, max_confidence[0] if max_confidence else 0),
+            }
