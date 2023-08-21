@@ -132,9 +132,9 @@ class PlexSkill(OVOSCommonPlaybackSkill):
                 "playlist": pl,
                 "playback": PlaybackType.AUDIO,
                 "skill_icon": self.skill_icon,
-                "image": pl[0].get("image", ""),
-                "bg_image": pl[0].get("bg_image", ""),
-                "title": pl[0].get("title"),
+                "image": pl[0].get("image", "") if pl else "",
+                "bg_image": pl[0].get("bg_image", "") if pl else "",
+                "title": pl[0].get("title") if pl else "",
             }
 
         # # Movie search
