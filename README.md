@@ -45,7 +45,7 @@ skills:
 
 Restart `neon-skills` with `sudo systemctl restart neon-skills` or restart Neon services from the GUI.
 
-For pip installation instructions, see [the OVOS section](#OVOS].
+For pip installation instructions, see [the OVOS section](#OVOS).
 
 #### Pairing
 
