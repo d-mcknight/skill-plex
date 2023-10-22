@@ -14,6 +14,21 @@ Also, due to the way OCP handles intent matching, the Plex skill will return mor
 
 _Note: The assumption with users of the Plex skill is that they would want to get Plex results by default, so the base confidence score is 75/100. Asking for Plex specifically boosts that base score to 90. While this will increase the chances of Plex results coming in first, other skills may also have high confidence scores, so results are not guaranteed._
 
+## Usage
+
+Music:
+"Hey Mycroft, play Jimi Hendrix"
+"Hey Mycroft, play music by Michael Jackson"
+"Hey Mycroft, play The Who on Plex"
+
+Movies:
+"Hey Mycroft, play the movie Ghostbusters"
+"Hey Mycroft, play the Ghostbusters movie on Plex"
+
+TV (not recommended on Mark 2):
+"Hey Mycroft, play the Scooby Doo series"
+"Hey Mycroft, play the Ghostbusters TV show on Plex"
+
 ## Installation
 
 ### Neon Mark 2
@@ -29,6 +44,8 @@ skills:
 ```
 
 Restart `neon-skills` with `sudo systemctl restart neon-skills` or restart Neon services from the GUI.
+
+For pip installation instructions, see [the OVOS section](#OVOS].
 
 #### Pairing
 
