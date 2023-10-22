@@ -14,7 +14,7 @@ Also, due to the way OCP handles intent matching, the Plex skill will return mor
 
 _Note: The assumption with users of the Plex skill is that they would want to get Plex results by default, so the base confidence score is 75/100. Asking for Plex specifically boosts that base score to 90. While this will increase the chances of Plex results coming in first, other skills may also have high confidence scores, so results are not guaranteed._
 
-## Usage
+## Examples
 
 Music:
 "Hey Mycroft, play Jimi Hendrix"
