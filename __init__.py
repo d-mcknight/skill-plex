@@ -23,7 +23,9 @@ from os.path import dirname, join
 from typing import List
 
 from ovos_plugin_common_play import MediaType, PlaybackType
+from ovos_utils import classproperty
 from ovos_utils.messagebus import Message
+from ovos_utils.process_utils import RuntimeRequirements
 from ovos_workshop.skills.common_play import OVOSCommonPlaybackSkill, ocp_search
 
 from .plex_api import PlexAPI
@@ -49,6 +51,20 @@ class PlexSkill(OVOSCommonPlaybackSkill):
             MediaType.TV,
         ]
         self._plex_api = self.plex_api
+
+    @classproperty
+    def runtime_requirements(self):
+        return RuntimeRequirements(
+            network_before_load=True,
+            internet_before_load=False,
+            gui_before_load=True,
+            requires_internet=False,
+            requires_network=True,
+            requires_gui=True,
+            no_internet_fallback=True,
+            no_network_fallback=False,
+            no_gui_fallback=True,
+        )
 
     @property
     def plex_api(self) -> PlexAPI:
